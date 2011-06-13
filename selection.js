@@ -1,3 +1,4 @@
+var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 if (this.getSelection) {
   this.selection = {
     hasSelection: function(win) {
@@ -58,7 +59,7 @@ if (this.getSelection) {
     }
   };
 } else if (this.document.selection) {
-  (function() {
+  (__bind(function() {
     var getBoundary, moveBoundary;
     getBoundary = function(doc, textRange, bStart) {
       var cursor, cursorNode, node, offset, parent;
@@ -142,7 +143,7 @@ if (this.getSelection) {
         return range.select();
       }
     };
-  })();
+  }, this))();
 } else {
   throw new Exception('Browser not supported: no selection support.');
 }

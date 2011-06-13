@@ -51,9 +51,9 @@ if this.getSelection
 			win.getSelection()?.addRange(r)
 
 else if this.document.selection
-	# <= IE8
+	# TextRanges (IE5+)
 	
-	(->	
+	(=>	
 		getBoundary = (doc, textRange, bStart) ->
 			# iterate backwards through parent element to find anchor location
 			cursorNode = doc.createElement('a')
