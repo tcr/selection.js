@@ -2,10 +2,10 @@
 # window selection utilities
 ########################################################################
 
-if root.getSelection
+if this.getSelection
 	# DOMSelection
 	
-	util.selection =
+	this.selection =
 		hasSelection: (win) ->
 			return (sel = win.getSelection()) and sel.focusNode? and sel.anchorNode?
 		
@@ -47,7 +47,7 @@ if root.getSelection
 				# IE9 throws error sometimes
 			win.getSelection()?.addRange(r)
 
-else if root.document.selection
+else if this.document.selection
 	# <= IE8
 	
 	(->	
@@ -98,7 +98,7 @@ else if root.document.selection
 			textRange.setEndPoint((if bStart then 'StartToStart' else 'EndToEnd'), cursor)
 			textRange[if bStart then 'moveStart' else 'moveEnd']('character', textOffset)
 	
-		util.selection =
+		this.selection =
 			hasSelection: (win) ->
 				win.focus()
 				return false unless win.document.selection
