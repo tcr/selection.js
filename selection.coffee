@@ -1,9 +1,7 @@
 ########################################################################
 
-# Cross-Browser selection utilities
+# window selection utilities
 
-# Provides a 'selection' object which normalizes differences across
-# browsers which support window.getSelection() and IE's TextRanges.
 ########################################################################
 
 
@@ -14,7 +12,7 @@ if root.getSelection
 
 	
 
-	selection =
+	util.selection =
 
 		hasSelection: (win) ->
 
@@ -200,7 +198,7 @@ else if root.document.selection
 
 	
 
-		selection =
+		util.selection =
 
 			hasSelection: (win) ->
 
