@@ -1,5 +1,7 @@
 ########################################################################
-# window selection utilities
+# Cross-Browser Selection Utilities
+# Provides a 'selection' object whose API support all modern browsers
+# (using window.getSelection()) as well as <= IE8 (using TextRanges)
 ########################################################################
 
 if this.getSelection
