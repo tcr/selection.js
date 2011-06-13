@@ -5,10 +5,12 @@
 #  and IE5+ (using TextRanges)
 ########################################################################
 
-if this.getSelection
+root = this
+
+if root.getSelection
 	# DOMSelection
 	
-	this.selection =
+	root.selection =
 		hasSelection: (win) ->
 			return (sel = win.getSelection()) and sel.focusNode? and sel.anchorNode?
 		
@@ -21,17 +23,17 @@ if this.getSelection
 			return [sel.focusNode, sel.focusOffset]
 			
 		getStart: (win) ->
-			return null unless util.selection.hasSelection(win)
-			[n1, o1] = util.selection.getOrigin(win)
-			[n2, o2] = util.selection.getFocus(win)
+			return null unless root.selection.hasSelection(win)
+			[n1, o1] = root.selection.getOrigin(win)
+			[n2, o2] = root.selection.getFocus(win)
 			if util.dom.isPreceding(n1, n2) or (n1 == n2 and o1 < o2)
 				return [n1, o1]
 			return [n2, o2]
 			
 		getEnd: (win) ->
-			return null unless util.selection.hasSelection(win)
-			[n1, o1] = util.selection.getOrigin(win)
-			[n2, o2] = util.selection.getFocus(win)
+			return null unless root.selection.hasSelection(win)
+			[n1, o1] = root.selection.getOrigin(win)
+			[n2, o2] = root.selection.getFocus(win)
 			if util.dom.isPreceding(n1, n2) or (n1 == n2 and o1 < o2)
 				return [n2, o2]
 			return [n1, o1]
@@ -50,10 +52,10 @@ if this.getSelection
 				# IE9 throws error sometimes
 			win.getSelection()?.addRange(r)
 
-else if this.document.selection
+else if root.document.selection
 	# TextRanges (IE5+)
 	
-	(=>	
+	(->	
 		getBoundary = (doc, textRange, bStart) ->
 			# iterate backwards through parent element to find anchor location
 			cursorNode = doc.createElement('a')
@@ -101,7 +103,7 @@ else if this.document.selection
 			textRange.setEndPoint((if bStart then 'StartToStart' else 'EndToEnd'), cursor)
 			textRange[if bStart then 'moveStart' else 'moveEnd']('character', textOffset)
 	
-		this.selection =
+		root.selection =
 			hasSelection: (win) ->
 				win.focus()
 				return false unless win.document.selection
@@ -110,21 +112,21 @@ else if this.document.selection
 				
 			getStart: (win) ->
 				win.focus()
-				return null unless util.selection.hasSelection(win)
+				return null unless root.selection.hasSelection(win)
 				range = win.document.selection.createRange()
 				return getBoundary(win.document, range, yes)
 				
 			getEnd: (win) ->
 				win.focus()
-				return null unless util.selection.hasSelection(win)
+				return null unless root.selection.hasSelection(win)
 				range = win.document.selection.createRange()
 				return getBoundary(win.document, range, no)
 			
 			# TextRange has no forward or backward indicator;
 			# just assume origin is start, focus end
 			
-			getOrigin: (win) -> util.selection.getStart(win)
-			getFocus: (win) -> util.selection.getEnd(win)
+			getOrigin: (win) -> root.selection.getStart(win)
+			getFocus: (win) -> root.selection.getEnd(win)
 				
 			setSelection: (win, orgn, orgo, focn, foco) ->
 				range = win.document.body.createTextRange()

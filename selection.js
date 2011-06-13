@@ -1,6 +1,7 @@
-var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
-if (this.getSelection) {
-  this.selection = {
+var root;
+root = this;
+if (root.getSelection) {
+  root.selection = {
     hasSelection: function(win) {
       var sel;
       return (sel = win.getSelection()) && (sel.focusNode != null) && (sel.anchorNode != null);
@@ -21,11 +22,11 @@ if (this.getSelection) {
     },
     getStart: function(win) {
       var n1, n2, o1, o2, _ref, _ref2;
-      if (!util.selection.hasSelection(win)) {
+      if (!root.selection.hasSelection(win)) {
         return null;
       }
-      _ref = util.selection.getOrigin(win), n1 = _ref[0], o1 = _ref[1];
-      _ref2 = util.selection.getFocus(win), n2 = _ref2[0], o2 = _ref2[1];
+      _ref = root.selection.getOrigin(win), n1 = _ref[0], o1 = _ref[1];
+      _ref2 = root.selection.getFocus(win), n2 = _ref2[0], o2 = _ref2[1];
       if (util.dom.isPreceding(n1, n2) || (n1 === n2 && o1 < o2)) {
         return [n1, o1];
       }
@@ -33,11 +34,11 @@ if (this.getSelection) {
     },
     getEnd: function(win) {
       var n1, n2, o1, o2, _ref, _ref2;
-      if (!util.selection.hasSelection(win)) {
+      if (!root.selection.hasSelection(win)) {
         return null;
       }
-      _ref = util.selection.getOrigin(win), n1 = _ref[0], o1 = _ref[1];
-      _ref2 = util.selection.getFocus(win), n2 = _ref2[0], o2 = _ref2[1];
+      _ref = root.selection.getOrigin(win), n1 = _ref[0], o1 = _ref[1];
+      _ref2 = root.selection.getFocus(win), n2 = _ref2[0], o2 = _ref2[1];
       if (util.dom.isPreceding(n1, n2) || (n1 === n2 && o1 < o2)) {
         return [n2, o2];
       }
@@ -58,8 +59,8 @@ if (this.getSelection) {
       return (_ref2 = win.getSelection()) != null ? _ref2.addRange(r) : void 0;
     }
   };
-} else if (this.document.selection) {
-  (__bind(function() {
+} else if (root.document.selection) {
+  (function() {
     var getBoundary, moveBoundary;
     getBoundary = function(doc, textRange, bStart) {
       var cursor, cursorNode, node, offset, parent;
@@ -101,7 +102,7 @@ if (this.getSelection) {
       textRange.setEndPoint((bStart ? 'StartToStart' : 'EndToEnd'), cursor);
       return textRange[bStart ? 'moveStart' : 'moveEnd']('character', textOffset);
     };
-    return this.selection = {
+    return root.selection = {
       hasSelection: function(win) {
         var range;
         win.focus();
@@ -114,7 +115,7 @@ if (this.getSelection) {
       getStart: function(win) {
         var range;
         win.focus();
-        if (!util.selection.hasSelection(win)) {
+        if (!root.selection.hasSelection(win)) {
           return null;
         }
         range = win.document.selection.createRange();
@@ -123,17 +124,17 @@ if (this.getSelection) {
       getEnd: function(win) {
         var range;
         win.focus();
-        if (!util.selection.hasSelection(win)) {
+        if (!root.selection.hasSelection(win)) {
           return null;
         }
         range = win.document.selection.createRange();
         return getBoundary(win.document, range, false);
       },
       getOrigin: function(win) {
-        return util.selection.getStart(win);
+        return root.selection.getStart(win);
       },
       getFocus: function(win) {
-        return util.selection.getEnd(win);
+        return root.selection.getEnd(win);
       },
       setSelection: function(win, orgn, orgo, focn, foco) {
         var range;
@@ -143,7 +144,7 @@ if (this.getSelection) {
         return range.select();
       }
     };
-  }, this))();
+  })();
 } else {
   throw new Exception('Browser not supported: no selection support.');
 }
