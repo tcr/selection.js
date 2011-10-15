@@ -1,67 +1,82 @@
-var root;
-root = this;
-if (root.getSelection) {
-  root.selection = {
-    hasSelection: function(win) {
-      var sel;
-      return (sel = win.getSelection()) && (sel.focusNode != null) && (sel.anchorNode != null);
+(function() {
+  var Dom, Selection, getBoundary, moveBoundary, root;
+  root = this;
+  Dom = {
+    isPreceding: function(n1, n2) {
+      return n2.compareDocumentPosition(n1) & 0x02;
     },
-    getOrigin: function(win) {
-      var sel;
-      if (!((sel = win.getSelection()) && (sel.anchorNode != null))) {
-        return null;
-      }
-      return [sel.anchorNode, sel.anchorOffset];
+    isText: function(d) {
+      return (d != null ? d.nodeType : void 0) === 3;
     },
-    getFocus: function(win) {
-      var sel;
-      if (!((sel = win.getSelection()) && (sel.focusNode != null))) {
-        return null;
+    getChildIndex: function(e) {
+      var k;
+      k = 0;
+      while (e = e.previousSibling) {
+        k++;
       }
-      return [sel.focusNode, sel.focusOffset];
-    },
-    getStart: function(win) {
-      var n1, n2, o1, o2, _ref, _ref2;
-      if (!root.selection.hasSelection(win)) {
-        return null;
-      }
-      _ref = root.selection.getOrigin(win), n1 = _ref[0], o1 = _ref[1];
-      _ref2 = root.selection.getFocus(win), n2 = _ref2[0], o2 = _ref2[1];
-      if (util.dom.isPreceding(n1, n2) || (n1 === n2 && o1 < o2)) {
-        return [n1, o1];
-      }
-      return [n2, o2];
-    },
-    getEnd: function(win) {
-      var n1, n2, o1, o2, _ref, _ref2;
-      if (!root.selection.hasSelection(win)) {
-        return null;
-      }
-      _ref = root.selection.getOrigin(win), n1 = _ref[0], o1 = _ref[1];
-      _ref2 = root.selection.getFocus(win), n2 = _ref2[0], o2 = _ref2[1];
-      if (util.dom.isPreceding(n1, n2) || (n1 === n2 && o1 < o2)) {
-        return [n2, o2];
-      }
-      return [n1, o1];
-    },
-    setSelection: function(win, orgn, orgo, focn, foco) {
-      var r, _ref, _ref2;
-      r = win.document.createRange();
-      r.setStart(orgn, orgo);
-      r.setEnd(focn, foco);
-      try {
-        if ((_ref = win.getSelection()) != null) {
-          _ref.removeAllRanges();
-        }
-      } catch (e) {
-
-      }
-      return (_ref2 = win.getSelection()) != null ? _ref2.addRange(r) : void 0;
+      return k;
     }
   };
-} else if (root.document.selection) {
-  (function() {
-    var getBoundary, moveBoundary;
+  if (root.getSelection) {
+    root.Selection = Selection = {
+      hasSelection: function(win) {
+        var sel;
+        return (sel = win.getSelection()) && (sel.focusNode != null) && (sel.anchorNode != null);
+      },
+      getOrigin: function(win) {
+        var sel;
+        if (!((sel = win.getSelection()) && (sel.anchorNode != null))) {
+          return null;
+        }
+        return [sel.anchorNode, sel.anchorOffset];
+      },
+      getFocus: function(win) {
+        var sel;
+        if (!((sel = win.getSelection()) && (sel.focusNode != null))) {
+          return null;
+        }
+        return [sel.focusNode, sel.focusOffset];
+      },
+      getStart: function(win) {
+        var n1, n2, o1, o2, _ref, _ref2;
+        if (!Selection.hasSelection(win)) {
+          return null;
+        }
+        _ref = Selection.getOrigin(win), n1 = _ref[0], o1 = _ref[1];
+        _ref2 = Selection.getFocus(win), n2 = _ref2[0], o2 = _ref2[1];
+        if (Dom.isPreceding(n1, n2) || (n1 === n2 && o1 < o2)) {
+          return [n1, o1];
+        }
+        return [n2, o2];
+      },
+      getEnd: function(win) {
+        var n1, n2, o1, o2, _ref, _ref2;
+        if (!Selection.hasSelection(win)) {
+          return null;
+        }
+        _ref = Selection.getOrigin(win), n1 = _ref[0], o1 = _ref[1];
+        _ref2 = Selection.getFocus(win), n2 = _ref2[0], o2 = _ref2[1];
+        if (Dom.isPreceding(n1, n2) || (n1 === n2 && o1 < o2)) {
+          return [n2, o2];
+        }
+        return [n1, o1];
+      },
+      setSelection: function(win, orgn, orgo, focn, foco) {
+        var r, _ref, _ref2;
+        r = win.document.createRange();
+        r.setStart(orgn, orgo);
+        r.setEnd(focn, foco);
+        try {
+          if ((_ref = win.getSelection()) != null) {
+            _ref.removeAllRanges();
+          }
+        } catch (e) {
+
+        }
+        return (_ref2 = win.getSelection()) != null ? _ref2.addRange(r) : void 0;
+      }
+    };
+  } else if (root.document.selection) {
     getBoundary = function(doc, textRange, bStart) {
       var cursor, cursorNode, node, offset, parent;
       cursorNode = doc.createElement('a');
@@ -81,7 +96,7 @@ if (root.getSelection) {
         offset = cursor.text.length;
       } else {
         node = cursorNode.parentNode;
-        offset = util.dom.getChildIndex(cursorNode);
+        offset = Dom.getChildIndex(cursorNode);
       }
       cursorNode.parentNode.removeChild(cursorNode);
       return [node, offset];
@@ -89,9 +104,9 @@ if (root.getSelection) {
     moveBoundary = function(doc, textRange, bStart, node, offset) {
       var anchorNode, anchorParent, cursor, cursorNode, textOffset;
       textOffset = 0;
-      anchorNode = util.dom.isText(node) ? node : node.childNodes[offset];
-      anchorParent = util.dom.isText(node) ? node.parentNode : node;
-      if (util.dom.isText(node)) {
+      anchorNode = Dom.isText(node) ? node : node.childNodes[offset];
+      anchorParent = Dom.isText(node) ? node.parentNode : node;
+      if (Dom.isText(node)) {
         textOffset = offset;
       }
       cursorNode = doc.createElement('a');
@@ -102,7 +117,7 @@ if (root.getSelection) {
       textRange.setEndPoint((bStart ? 'StartToStart' : 'EndToEnd'), cursor);
       return textRange[bStart ? 'moveStart' : 'moveEnd']('character', textOffset);
     };
-    return root.selection = {
+    root.Selection = Selection = {
       hasSelection: function(win) {
         var range;
         win.focus();
@@ -115,7 +130,7 @@ if (root.getSelection) {
       getStart: function(win) {
         var range;
         win.focus();
-        if (!root.selection.hasSelection(win)) {
+        if (!Selection.hasSelection(win)) {
           return null;
         }
         range = win.document.selection.createRange();
@@ -124,17 +139,17 @@ if (root.getSelection) {
       getEnd: function(win) {
         var range;
         win.focus();
-        if (!root.selection.hasSelection(win)) {
+        if (!Selection.hasSelection(win)) {
           return null;
         }
         range = win.document.selection.createRange();
         return getBoundary(win.document, range, false);
       },
       getOrigin: function(win) {
-        return root.selection.getStart(win);
+        return Selection.getStart(win);
       },
       getFocus: function(win) {
-        return root.selection.getEnd(win);
+        return Selection.getEnd(win);
       },
       setSelection: function(win, orgn, orgo, focn, foco) {
         var range;
@@ -144,7 +159,7 @@ if (root.getSelection) {
         return range.select();
       }
     };
-  })();
-} else {
-  throw new Exception('Browser not supported: no selection support.');
-}
+  } else {
+    throw new Exception('Browser has no selection support.');
+  }
+}).call(this);
