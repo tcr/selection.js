@@ -1,5 +1,5 @@
-# Cross-Browser Selection Utilities
-# =================================
+Cross-Browser Selection Utilities
+=================================
 
 This utility provides a window.Selection object with common API for 
 
@@ -19,23 +19,20 @@ you need.
 
 Released under the MIT license.
 
-# API
-# ---
+### API
 
-Include "selection.js" in your project.
+Include "selection.js" in your project. The following static methods are available:
 
-window.Selection is a static object with the following methods:
-
-* _hasSelection(window)_ — Returns true if anything is currently
-selected.                
-* _getOrigin(window)_ — Returns an array \[anchorNode, anchorOffset\]
-of the current selection's starting anchor (in IE, returns leftmost anchor)                
-* _getFocus(window)_ — Returns an array \[focusNode, focusOffset\]
-of the current selection's focus anchor (in IE, returns rightmost anchor)                
-* _getStart(window)_ — Returns an array \[node, offset\] for the leftmost
-anchor.                
-* _getEnd(window)_ — Returns an array \[node, offset\] for the rightmost
-anchor.                
-* _setSelection(window, originNode, originOffset, focusNode, focusOffset)_ --
-Sets the selection to include the new origin anchor and focus anchor
-(in IE, origin will be leftmost anchor, focus rightmost)
+* __Selection.hasSelection(__*window*__)__ — Returns true if anything is currently
+  selected.                
+* __Selection.getOrigin(__*window*__)__ -- Returns an array \[anchorNode, anchorOffset\]
+  of the current selection's starting anchor (in IE, returns leftmost anchor)                
+* __Selection.getFocus(__*window*__)__ -- Returns an array \[focusNode, focusOffset\]
+  of the current selection's focus anchor (in IE, returns rightmost anchor)                
+* __Selection.getStart(__*window*__)__ -- Returns an array \[node, offset\] for the leftmost
+  anchor.                
+* __Selection.getEnd(__*window*__)__ -- Returns an array \[node, offset\] for the rightmost
+  anchor.                
+* __Selection.setSelection(__*window, originNode, originOffset, focusNode, focusOffset*__)__
+  -- Sets the selection to include the new origin anchor and focus anchor
+  (in IE, origin will be leftmost anchor, focus rightmost)
