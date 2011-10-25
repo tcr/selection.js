@@ -21,9 +21,10 @@ Released under the MIT license.
 
 ### API
 
-Include "selection.js" in your project. The following static methods are available:
+Include "selection.js" in your project. The global "Selection" object is a collection of static methods. It can also be instantiated as an object `new Selection(window)` with the same methods as below but no `window` argument necessary.
 
-* __Selection.hasSelection(__*window*__)__ — Returns true if anything is currently
+* __Selection.supported__ -- This property is `true` if the browser supports the Selection object.
+* __Selection.hasSelection(__*window*__)__ -- Returns true if anything is currently
   selected.                
 * __Selection.getOrigin(__*window*__)__ -- Returns an array \[anchorNode, anchorOffset\]
   of the current selection's starting anchor (in IE, returns leftmost anchor)                
@@ -36,3 +37,4 @@ Include "selection.js" in your project. The following static methods are availab
 * __Selection.setSelection(__*window, originNode, originOffset, focusNode, focusOffset*__)__
   -- Sets the selection to include the new origin anchor and focus anchor
   (in IE, origin will be leftmost anchor, focus rightmost)
+* __Selection.clearSelection(__*window*__)__ -- Deselects all content.

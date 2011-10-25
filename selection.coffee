@@ -40,55 +40,76 @@ Dom =
 # DOMSelection
 # ------------
 
-if root.getSelection
-	root.Selection = Selection =
-		hasSelection: (win) ->
-			return (sel = win.getSelection()) and sel.focusNode? and sel.anchorNode?
-		
-		getOrigin: (win) ->
-			return null unless (sel = win.getSelection()) and sel.anchorNode?
-			return [sel.anchorNode, sel.anchorOffset]
-			
-		getFocus: (win) ->
-			return null unless (sel = win.getSelection()) and sel.focusNode?
-			return [sel.focusNode, sel.focusOffset]
-			
-		getStart: (win) ->
-			return null unless Selection.hasSelection(win)
-			[n1, o1] = Selection.getOrigin(win)
-			[n2, o2] = Selection.getFocus(win)
-			if Dom.isPreceding(n1, n2) or (n1 == n2 and o1 < o2)
-				return [n1, o1]
-			return [n2, o2]
-			
-		getEnd: (win) ->
-			return null unless Selection.hasSelection(win)
-			[n1, o1] = Selection.getOrigin(win)
-			[n2, o2] = Selection.getFocus(win)
-			if Dom.isPreceding(n1, n2) or (n1 == n2 and o1 < o2)
-				return [n2, o2]
-			return [n1, o1]
+root.Selection = class Selection
+	constructor: (@win) ->
+	hasSelection: -> Selection.hasSelection(@win)
+	getOrigin: -> Selection.getOrigin(@win)
+	getFocus: -> Selection.getFocus(@win)
+	getStart: -> Selection.getStart(@win)
+	getEnd: -> Selection.getEnd(@win)
+	setSelection: (args...) -> Selection.setSelection(@win, args...)
+	clearSelection: -> Selection.clearSelection(@win)
 
-		setSelection: (win, orgn, orgo, focn, foco) ->
-			# not using Selection methods as IE9 doesn't support extend()
-			#win.getSelection()?.collapse(orgn, orgo)
-			#win.getSelection()?.extend(focn, foco)
+if root.getSelection
+	Selection.supported = true
+
+	Selection.hasSelection = (win) ->
+		return (sel = win.getSelection()) and sel.focusNode? and sel.anchorNode?
+		
+	Selection.getOrigin = (win) ->
+		return null unless (sel = win.getSelection()) and sel.anchorNode?
+		return [sel.anchorNode, sel.anchorOffset]
 			
-			r = win.document.createRange()
-			r.setStart(orgn, orgo)
-			r.setEnd(focn, foco)
-			try 
-				win.getSelection()?.removeAllRanges()
-			catch e
-				# IE9 throws error sometimes
-			win.getSelection()?.addRange(r)
+	Selection.getFocus = (win) ->
+		return null unless (sel = win.getSelection()) and sel.focusNode?
+		return [sel.focusNode, sel.focusOffset]
+			
+	Selection.getStart = (win) ->
+		return null unless Selection.hasSelection(win)
+		[n1, o1] = Selection.getOrigin(win)
+		[n2, o2] = Selection.getFocus(win)
+		if Dom.isPreceding(n1, n2) or (n1 == n2 and o1 < o2)
+			return [n1, o1]
+		return [n2, o2]
+		
+	Selection.getEnd = (win) ->
+		return null unless Selection.hasSelection(win)
+		[n1, o1] = Selection.getOrigin(win)
+		[n2, o2] = Selection.getFocus(win)
+		if Dom.isPreceding(n1, n2) or (n1 == n2 and o1 < o2)
+			return [n2, o2]
+		return [n1, o1]
+
+	Selection.setSelection = (win, orgn, orgo, focn = orgn, foco = orgo) ->
+		# not using collapse/extend as IE9 doesn't support extend()
+		#win.getSelection()?.collapse(orgn, orgo)
+		#win.getSelection()?.extend(focn, foco)
+		# this method still preserves directionality.
+		
+		r = win.document.createRange()
+		r.setStart(orgn, orgo)
+		r.setEnd(focn, foco)
+		try 
+			win.getSelection()?.removeAllRanges()
+		catch e
+			# IE9 throws error sometimes
+		win.getSelection()?.addRange(r)
+	
+	Selection.clearSelection = (win) ->
+		try 
+			win.getSelection()?.removeAllRanges()
+		catch e
+			# IE9 throws error sometimes
 
 # TextRanges (<= IE8)
 # -------------------
 
 else if root.document.selection
 	getBoundary = (doc, textRange, bStart) ->
-		# iterate backwards through parent element to find anchor location
+		# We can get the "parentElement" of a cursor (an endpoint of a TextRange).
+		# Create an anchor (throwaway) element and move it from the end of the element
+		# progressively backward until the text range of the anchor's contents
+		# meets or exceeds our original cursor.
 		cursorNode = doc.createElement('a')
 		cursor = textRange.duplicate()
 		cursor.collapse(bStart)
@@ -100,74 +121,83 @@ else if root.document.selection
 			  cursorNode.previousSibling?
 				break
 
-		# when we exceed or meet the cursor, we've found the node
-		if cursor.compareEndPoints((if bStart then 'StartToStart' else 'StartToEnd'), textRange) == -1 and
-		  cursorNode.nextSibling
-			# data node
+		# When we exceed or meet the cursor, we've found the node our cursor is
+		# anchored on.
+		if cursor.compareEndPoints((if bStart then 'StartToStart' else 'StartToEnd'), textRange) == -1 and cursorNode.nextSibling
+			# This node can be a text node...
 			cursor.setEndPoint((if bStart then 'EndToStart' else 'EndToEnd'), textRange);
 			node = cursorNode.nextSibling
 			offset = cursor.text.length
 		else
-			# element
+			# Or an element.
 			node = cursorNode.parentNode
 			offset = Dom.getChildIndex(cursorNode)
-			
+		
+		# Remove our dummy node and return the anchor.
 		cursorNode.parentNode.removeChild(cursorNode)
 		return [node, offset]
 
 	moveBoundary = (doc, textRange, bStart, node, offset) ->
-		# find anchor node and offset
+		# Find the normalized node and parent of our anchor.
 		textOffset = 0
 		anchorNode = if Dom.isText(node) then node else node.childNodes[offset]
 		anchorParent = if Dom.isText(node) then node.parentNode else node
-		# visible data nodes need a text offset
+		# Visible data nodes need an offset parameter.
 		if Dom.isText(node)
 			textOffset = offset
 
-		# create a cursor element node to position range (since we can't select text nodes)
+		# We create another dummy anchor element, insert it at the anchor,
+		# and create a text range to select the contents of that node.
+		# Then we remove the dummy.
 		cursorNode = doc.createElement('a')
 		anchorParent.insertBefore(cursorNode, anchorNode or null)
 		cursor = doc.body.createTextRange()
 		cursor.moveToElementText(cursorNode)
 		cursorNode.parentNode.removeChild(cursorNode)
-		# move range
+		# Update the passed-in range to this cursor.
 		textRange.setEndPoint((if bStart then 'StartToStart' else 'EndToEnd'), cursor)
 		textRange[if bStart then 'moveStart' else 'moveEnd']('character', textOffset)
 
-	root.Selection = Selection =
-		hasSelection: (win) ->
-			win.focus()
-			return false unless win.document.selection
-			range = win.document.selection.createRange()
-			return range && range.parentElement().document == win.document
-			
-		getStart: (win) ->
-			win.focus()
-			return null unless Selection.hasSelection(win)
-			range = win.document.selection.createRange()
-			return getBoundary(win.document, range, yes)
-			
-		getEnd: (win) ->
-			win.focus()
-			return null unless Selection.hasSelection(win)
-			range = win.document.selection.createRange()
-			return getBoundary(win.document, range, no)
+	# Selection methods.
+
+	Selection.supported = true
+
+	Selection.hasSelection = (win) ->
+		win.focus()
+		return false unless win.document.selection
+		range = win.document.selection.createRange()
+		return range && range.parentElement().document == win.document
 		
-		# TextRange has no forward or backward indicator;
-		# just assume origin is start, focus end
+	Selection.getStart = (win) ->
+		win.focus()
+		return null unless Selection.hasSelection(win)
+		range = win.document.selection.createRange()
+		return getBoundary(win.document, range, yes)
 		
-		getOrigin: (win) -> Selection.getStart(win)
-		getFocus: (win) -> Selection.getEnd(win)
-			
-		setSelection: (win, orgn, orgo, focn, foco) ->
-			range = win.document.body.createTextRange()
-			# intentionally [end, start] order
-			moveBoundary(win.document, range, false, focn, foco)
-			moveBoundary(win.document, range, true, orgn, orgo)
-			range.select()
+	Selection.getEnd = (win) ->
+		win.focus()
+		return null unless Selection.hasSelection(win)
+		range = win.document.selection.createRange()
+		return getBoundary(win.document, range, no)
+	
+	# TextRange has no forward or backward indicator;
+	# just assume origin is start, focus end
+	
+	Selection.getOrigin = (win) -> Selection.getStart(win)
+	Selection.getFocus = (win) -> Selection.getEnd(win)
+		
+	Selection.setSelection = (win, orgn, orgo, focn = orgn, foco = orgo) ->
+		range = win.document.body.createTextRange()
+		# Intentionally do end, start order to fix selection bugs.
+		moveBoundary(win.document, range, false, focn, foco)
+		moveBoundary(win.document, range, true, orgn, orgo)
+		range.select()
+	
+	Selection.clearSelection = (win) ->
+		win.document.selection.empty()
 
 # Unsupported
 # -----------
 
 else
-	throw new Exception('Browser has no selection support.')
+	Selection.supported = false
