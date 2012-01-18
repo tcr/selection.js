@@ -6,6 +6,34 @@
     isPreceding: function(n1, n2) {
       return n2.compareDocumentPosition(n1) & 0x02;
     },
+    contains: function(n1, n2) {
+      if (n1.compareDocumentPosition != null) {
+        return n1.compareDocumentPosition(n2) & 16;
+      } else {
+        return n1.contains(n2);
+      }
+    },
+    isCursorPreceding: function(n1, o1, n2, o2) {
+      if (n1 === n2) {
+        return o1 <= o2;
+      }
+      if (Dom.isText(n1) && Dom.isText(n2)) {
+        return Dom.isPreceding(n1, n2);
+      }
+      if (Dom.isText(n1) && !Dom.isText(n2)) {
+        return !Dom.isCursorPreceding(n2, o2, n1, o1);
+      }
+      if (!Dom.contains(n1, n2)) {
+        return Dom.isPreceding(n1, n2);
+      }
+      if (n1.childNodes.length <= o1) {
+        return false;
+      }
+      if (n1.childNodes[o1] === n2) {
+        return 0 <= o2;
+      }
+      return Dom.isPreceding(n1.childNodes[o1], n2);
+    },
     isText: function(d) {
       return (d != null ? d.nodeType : void 0) === 3;
     },
@@ -74,7 +102,7 @@
       }
       _ref = Selection.getOrigin(win), n1 = _ref[0], o1 = _ref[1];
       _ref2 = Selection.getFocus(win), n2 = _ref2[0], o2 = _ref2[1];
-      if (Dom.isPreceding(n1, n2) || (n1 === n2 && o1 < o2)) {
+      if (Dom.isCursorPreceding(n1, o1, n2, o2)) {
         return [n1, o1];
       }
       return [n2, o2];
@@ -86,7 +114,7 @@
       }
       _ref = Selection.getOrigin(win), n1 = _ref[0], o1 = _ref[1];
       _ref2 = Selection.getFocus(win), n2 = _ref2[0], o2 = _ref2[1];
-      if (Dom.isPreceding(n1, n2) || (n1 === n2 && o1 < o2)) {
+      if (Dom.isCursorPreceding(n1, o1, n2, o2)) {
         return [n2, o2];
       }
       return [n1, o1];

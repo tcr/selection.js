@@ -30,6 +30,19 @@ Dom =
 	isPreceding: (n1, n2) ->
 		return n2.compareDocumentPosition(n1) & 0x02
 
+	contains: (n1, n2) ->
+		if n1.compareDocumentPosition? then n1.compareDocumentPosition(n2) & 16
+		else n1.contains(n2)
+
+	isCursorPreceding: (n1, o1, n2, o2) ->
+		if n1 == n2 then return o1 <= o2 
+		if Dom.isText(n1) and Dom.isText(n2) then return Dom.isPreceding(n1, n2)
+		if Dom.isText(n1) and not Dom.isText(n2) then return !Dom.isCursorPreceding(n2, o2, n1, o1)
+		unless Dom.contains(n1, n2) then return Dom.isPreceding(n1, n2) 
+		if n1.childNodes.length <= o1 then return false
+		if n1.childNodes[o1] == n2 then return 0 <= o2 
+		return Dom.isPreceding n1.childNodes[o1], n2
+
 	isText: (d) -> d?.nodeType == 3
 
 	getChildIndex: (e) ->
@@ -68,7 +81,7 @@ if root.getSelection
 		return null unless Selection.hasSelection(win)
 		[n1, o1] = Selection.getOrigin(win)
 		[n2, o2] = Selection.getFocus(win)
-		if Dom.isPreceding(n1, n2) or (n1 == n2 and o1 < o2)
+		if Dom.isCursorPreceding(n1, o1, n2, o2)
 			return [n1, o1]
 		return [n2, o2]
 		
@@ -76,7 +89,7 @@ if root.getSelection
 		return null unless Selection.hasSelection(win)
 		[n1, o1] = Selection.getOrigin(win)
 		[n2, o2] = Selection.getFocus(win)
-		if Dom.isPreceding(n1, n2) or (n1 == n2 and o1 < o2)
+		if Dom.isCursorPreceding(n1, o1, n2, o2)
 			return [n2, o2]
 		return [n1, o1]
 
