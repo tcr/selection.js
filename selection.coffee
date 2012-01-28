@@ -32,7 +32,7 @@ Dom =
 
 	contains: (n1, n2) ->
 		if n1.compareDocumentPosition? then n1.compareDocumentPosition(n2) & 16
-		else n1.contains(n2)
+		else n1.contains?(n2)
 
 	isCursorPreceding: (n1, o1, n2, o2) ->
 		if n1 == n2 then return o1 <= o2 
@@ -94,19 +94,21 @@ if root.getSelection
 		return [n1, o1]
 
 	Selection.setSelection = (win, orgn, orgo, focn = orgn, foco = orgo) ->
-		# not using collapse/extend as IE9 doesn't support extend()
-		#win.getSelection()?.collapse(orgn, orgo)
-		#win.getSelection()?.extend(focn, foco)
-		# this method still preserves directionality.
-		
-		r = win.document.createRange()
-		r.setStart(orgn, orgo)
-		r.setEnd(focn, foco)
-		try 
-			win.getSelection()?.removeAllRanges()
-		catch e
-			# IE9 throws error sometimes
-		win.getSelection()?.addRange(r)
+		return unless sel = win.getSelection()?
+		# .collapse() and .extend() required for directionality and drag preservation.
+		if sel.collapse? and sel.extend?
+			sel.collapse orgn, orgo
+			sel.extend focn, foco
+		# IE9, etc.
+		else
+			r = win.document.createRange()
+			r.setStart orgn, orgo
+			r.setEnd focn, foco
+			try 
+				win.removeAllRanges()
+			catch e
+				# IE9 throws error sometimes
+			sel.addRange(r)
 	
 	Selection.clearSelection = (win) ->
 		try 
