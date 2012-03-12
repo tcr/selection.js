@@ -94,7 +94,7 @@ if root.getSelection
 		return [n1, o1]
 
 	Selection.setSelection = (win, orgn, orgo, focn = orgn, foco = orgo) ->
-		return unless sel = win.getSelection()?
+		return unless (sel = win.getSelection())?
 		# .collapse() and .extend() required for directionality and drag preservation.
 		if sel.collapse? and sel.extend?
 			sel.collapse orgn, orgo
@@ -105,7 +105,7 @@ if root.getSelection
 			r.setStart orgn, orgo
 			r.setEnd focn, foco
 			try 
-				win.removeAllRanges()
+				sel.removeAllRanges()
 			catch e
 				# IE9 throws error sometimes
 			sel.addRange(r)
