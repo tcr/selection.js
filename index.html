@@ -1,0 +1,92 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Selection.js by timcameronryan</title>
+    
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="javascripts/scale.fix.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Selection.js</h1>
+        <p>A tiny JavaScript DOM selection library for modern browsers and IE5-8.</p>
+        <p class="view"><a href="https://github.com/timcameronryan/selection.js">View the Project on GitHub <small>timcameronryan/selection.js</small></a></p>
+        <ul>
+          <li><a href="https://github.com/timcameronryan/selection.js/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/timcameronryan/selection.js/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/timcameronryan/selection.js">Fork On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h3>Cross-Browser Selection Utilities</h3>
+
+<p>This utility provides a window.Selection object with common API for </p>
+
+<ul>
+<li>all modern browsers (using window.getSelection())<br>
+</li>
+<li>IE5—8 (using TextRanges)</li>
+</ul><p>All modern browsers support window.getSelection(), with the notable exception
+of previous versions of Internet Explorer. DOM Selections are still a working
+standard. IE exposes its selection interface through TextRanges, which operate
+on text characters rather than DOM nodes.</p>
+
+<p>This is a simple API to find middle ground between current browsers. A new
+window.Selection object is created that operates on nodes and offsets (like 
+DOMRange anchors). By manipulating the DOM you can add support for most Range
+functionality (extract/clone/deleteContents, etc.) or just implement what
+you need.</p>
+
+<p>Released under the MIT license.</p>
+
+<h3>API</h3>
+
+<p>Include "selection.js" in your project. The global "Selection" object is a collection of static methods. It can also be instantiated as an object <code>new Selection(window)</code> with the same methods as below but no <code>window</code> argument necessary.</p>
+
+<ul>
+<li>
+<strong>Selection.supported</strong> -- This property is <code>true</code> if the browser supports the Selection object.</li>
+<li>
+<strong>Selection.hasSelection(</strong><em>window</em><strong>)</strong> -- Returns true if anything is currently
+selected.<br>
+</li>
+<li>
+<strong>Selection.getOrigin(</strong><em>window</em><strong>)</strong> -- Returns an array [anchorNode, anchorOffset]
+of the current selection's starting anchor (in IE, returns leftmost anchor)<br>
+</li>
+<li>
+<strong>Selection.getFocus(</strong><em>window</em><strong>)</strong> -- Returns an array [focusNode, focusOffset]
+of the current selection's focus anchor (in IE, returns rightmost anchor)<br>
+</li>
+<li>
+<strong>Selection.getStart(</strong><em>window</em><strong>)</strong> -- Returns an array [node, offset] for the leftmost
+anchor.<br>
+</li>
+<li>
+<strong>Selection.getEnd(</strong><em>window</em><strong>)</strong> -- Returns an array [node, offset] for the rightmost
+anchor.<br>
+</li>
+<li>
+<strong>Selection.setSelection(</strong><em>window, originNode, originOffset, focusNode, focusOffset</em><strong>)</strong>
+-- Sets the selection to include the new origin anchor and focus anchor
+(in IE, origin will be leftmost anchor, focus rightmost)</li>
+<li>
+<strong>Selection.clearSelection(</strong><em>window</em><strong>)</strong> -- Deselects all content.</li>
+</ul>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/timcameronryan">timcameronryan</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <!--[if !IE]><script>fixScale(document);</script><!--<![endif]-->
+  </body>
+</html>
