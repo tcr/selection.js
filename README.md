@@ -1,27 +1,21 @@
-Cross-Browser Selection Utilities
-=================================
+selection.js
+============
 
-This utility provides a window.Selection object with common API for 
+A simple (4kb) library for manipulating cursor selections across all browsers:
 
-* all modern browsers (using window.getSelection())      
-* IE5—8 (using TextRanges)
+* Modern browsers, using DOM Selection/Ranges
+* IE5—8, using TextRanges
 
-All modern browsers support window.getSelection(), with the notable exception
-of previous versions of Internet Explorer. DOM Selections are still a working
-standard. IE exposes its selection interface through TextRanges, which operate
-on text characters rather than DOM nodes.
+This library adds a `window.Selection` object with static methods for retrieving,
+setting, and clearing a user selection. By manipulating the DOM, you can replicate
+most DOM Range functionality (like extract/clone/deleteContents, etc.) or just
+implement what your application actually needs.
 
-This is a simple API to find middle ground between current browsers. A new
-window.Selection object is created that operates on nodes and offsets (like 
-DOMRange anchors). By manipulating the DOM you can add support for most Range
-functionality (extract/clone/deleteContents, etc.) or just implement what
-you need.
+### Usage
 
-Released under the MIT license.
-
-### API
-
-Include "selection.js" in your project. The global "Selection" object is a collection of static methods. It can also be instantiated as an object `new Selection(window)` with the same methods as below but no `window` argument necessary.
+Include "selection.js" in your project. The global `window.Selection` object is
+has the following static methods. As a shorthand, `new Selection(window)` instantiates
+an object with the same methods, but the `window` argument is no longer necessary.
 
 * __Selection.supported__ -- This property is `true` if the browser supports the Selection object.
 * __Selection.hasSelection(__*window*__)__ -- Returns true if anything is currently
@@ -38,3 +32,7 @@ Include "selection.js" in your project. The global "Selection" object is a colle
   -- Sets the selection to include the new origin anchor and focus anchor
   (in IE, origin will be leftmost anchor, focus rightmost)
 * __Selection.clearSelection(__*window*__)__ -- Deselects all content.
+
+### License
+
+Released under the MIT license.
